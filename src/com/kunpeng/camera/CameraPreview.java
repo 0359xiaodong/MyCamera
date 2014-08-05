@@ -8,8 +8,8 @@ import android.hardware.Camera;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
- 
-/** 一个基本的相机预览界面类    **/
+
+/** 一个基本的相机预览界面类  **/
 @SuppressLint("ViewConstructor")
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
  

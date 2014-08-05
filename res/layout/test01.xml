@@ -1,65 +1,69 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity" >
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
-    xmlns:tools="http://schemas.android.com/tools" 
-    android:layout_width="match_parent" 
-    android:layout_height="match_parent" 
-    android:orientation="vertical" 
-    tools:context=".MainActivity">
     <FrameLayout
         android:id="@+id/PreviewView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="0.8" >
     </FrameLayout>
-    <RelativeLayout 
-        android:layout_width="match_parent" 
-        android:layout_height="0dp" 
-        android:layout_weight="0.2" 
-        android:background="@drawable/bgtest">
-        <Button 
-            android:id="@+id/BtnCapture1" 
-            android:layout_width="60dp" 
-            android:layout_height="60dp" 
-            android:layout_centerHorizontal="true" 
-            android:layout_margin="10dp"
-            android:layout_centerVertical="true" 
-            android:background="@drawable/take"/>
-         <Button 
-            android:id="@+id/BtnCapture2" 
-            android:layout_width="60dp" 
-            android:layout_height="60dp" 
-            android:layout_marginLeft="10dp"
-            android:layout_toLeftOf="@id/BtnCapture1"
-            android:layout_centerHorizontal="true" 
-            android:layout_centerVertical="true" 
-            android:background="@drawable/video"/>
-        <Button 
-            android:id="@+id/Decorate" 
-            android:layout_width="60dp" 
-            android:layout_height="60dp" 
-            android:layout_toLeftOf="@id/BtnCapture2"
-            android:layout_centerHorizontal="true" 
-            android:layout_centerVertical="true" 
-            android:background="@drawable/dec"/>
-         <Button 
-            android:id="@+id/BtnCapture4" 
-            android:layout_width="60dp" 
-            android:layout_height="60dp" 
-            
-             android:layout_toRightOf="@id/BtnCapture1"
-            android:layout_centerHorizontal="true" 
-            android:layout_centerVertical="true" 
-            android:background="@drawable/flash"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.2"
+        android:background="@drawable/bgtest" >
+
+        <Button
+            android:id="@+id/takePhoto"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:layout_margin="9dp"
+            android:background="@drawable/take" />
+
+        <Button
+            android:id="@+id/_video"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_alignTop="@+id/Decorate"
+            android:layout_marginLeft="9dp"
+            android:layout_toLeftOf="@+id/takePhoto"
+            android:background="@drawable/video" />
+
+        <Button
+            android:id="@+id/Decorate"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@id/_video"
+            android:background="@drawable/dec" />
+
+        <Button
+            android:id="@+id/flashLight"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_alignBaseline="@+id/takePhoto"
+            android:layout_alignBottom="@+id/takePhoto"
+            android:layout_toRightOf="@+id/takePhoto"
+            android:background="@drawable/button_selector" />
+
         <ImageView
-            android:id="@+id/ThumbsView" 
-            android:layout_width="60dp" 
-            android:layout_height="60dp" 
-            
-            android:layout_alignParentRight="true" 
-            android:layout_centerVertical="true" 
-            android:layout_margin="15dp" 
+            android:id="@+id/ThumbsView"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignTop="@+id/flashLight"
+            android:layout_margin="5dp"
             android:background="@drawable/pic"
-            android:contentDescription="@string/Description"/>
-     
-	
-	</RelativeLayout ></LinearLayout>
+            android:contentDescription="@string/Description" />
+
+    </RelativeLayout>
+
+</LinearLayout>

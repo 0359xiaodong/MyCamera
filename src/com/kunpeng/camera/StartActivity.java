@@ -7,18 +7,21 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import com.kunpeng.camera.R.drawable;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.hardware.Camera.AutoFocusCallback;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.ShutterCallback;
+import android.media.CamcorderProfile;
 import android.media.MediaPlayer;
+import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -49,6 +52,7 @@ public class StartActivity extends Activity {
    /**相机拍摄区**/
     private FrameLayout mFrameLayout;
     /** MediaPlayer **/
+    private MediaPlayer mPlayer;
     /** 拍照按钮  **/
     Button BtnCapture;
     /**装饰品按钮**/
@@ -57,7 +61,16 @@ public class StartActivity extends Activity {
     private Button Change;
     /**曝光度调整**/
     private Button expsure;
-    private MediaPlayer mPlayer;
+    /**闪光灯按钮**/
+    private Button flash;
+    /**判断闪光灯开关**/
+    private static boolean  flash_open=false;
+    /**相机参数**/
+    Camera.Parameters parameters;
+    /**录像机**/
+    private MediaRecorder mMediaRecorder;
+    /**录像开始与否**/
+    private boolean isRecording = true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,9 +97,45 @@ public class StartActivity extends Activity {
         mFrameLayout.addView(mPreview); 
         mCamera.startPreview();
         
-        
-        /**拍照按钮功能实现**/
-        BtnCapture= (Button) findViewById(R.id.BtnCapture1);
+        /**闪光灯功能的实现
+         * 
+         * @date 2014.8.5
+         * **/
+        flash=(Button)findViewById(R.id.flashLight);
+        flash.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				/*如果摄像机打开，点击后关闭，闪光灯图片变为关闭图片*/
+				if(flash_open==true)
+				{
+					parameters = mCamera.getParameters();
+					parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+					mCamera.setParameters(parameters);
+					flash_open=false;
+					flash.setBackgroundResource(R.drawable.flashno);
+				}
+				
+				else if(flash_open==false)
+				{
+					parameters = mCamera.getParameters();
+            		parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+					mCamera.setParameters(parameters);
+					flash_open=true;
+					flash.setBackgroundResource(R.drawable.flash);
+					
+				}
+			}
+        	
+        	
+        });
+
+       
+        /**拍照按钮功能实现
+         * date 2014.8.4
+         * **/
+        BtnCapture= (Button) findViewById(R.id.takePhoto);
         BtnCapture.setOnClickListener(new OnClickListener()
         {
             @Override
@@ -96,13 +145,15 @@ public class StartActivity extends Activity {
             	
                 mCamera.autoFocus(new AutoFocusCallback()
                 {
+                	
                     /** 自动聚焦聚焦后完成拍照  **/
                     @Override
                     public void onAutoFocus(boolean isSuccess, Camera camera) 
                     {
                         if(isSuccess&&camera!=null)
                         {
-                            mCamera.takePicture(mShutterCallback, null, mPicureCallback);
+                        		mCamera.takePicture(mShutterCallback, null, mPicureCallback);
+                            
                         }
                     }
                      
@@ -111,9 +162,11 @@ public class StartActivity extends Activity {
         });
          
         
+        
         /** 相机缩略图实现  **/
          
         ThumbsView = (ImageView)findViewById(R.id.ThumbsView);
+        
         ThumbsView.setOnClickListener(new OnClickListener()
         {
             @Override
@@ -134,17 +187,39 @@ public class StartActivity extends Activity {
         });
         
         /**装饰品按钮功能实现**///未完待续……
-        Decorate=(Button)findViewById(R.id.Decorate);
-        Decorate.setOnClickListener(new OnClickListener(){
+        /*Decorate=(Button)findViewById(R.id.Decorate);
+        Decorate.setOnClickListener(new OnClickLister(){
         	 public void onClick(View v) 
              {
-        		 Intent intent = new Intent(Intent.ACTION_VIEW);
-        		
-        		 
-             }
-        
-        });
+              
+        }
+        });*/
+        /**视频拍照转换**/
+     Change=(Button) findViewById(R.id._video);
+     Decorate.setOnClickListener(new OnClickListener(){
 
+		@Override
+		public void onClick(View arg0) {
+			// TODO Auto-generated method stub
+			//解锁相机
+			mCamera.unlock();
+		
+			mMediaRecorder=new MediaRecorder();
+			//设置录像摄像头
+			mMediaRecorder.setCamera(mCamera);
+			//设置音频视频读取位置
+			mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
+			mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+			//指定camCorderProfile API 8以上才能使用
+			mMediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH));
+			//指定文件存取位置getOutputMediaFile(MEDIA_TYPE_VIDEO).toString()
+			
+			
+			mMediaRecorder.setPreviewDisplay(mPreview.getHolder().getSurface());
+		
+		}
+		    	 
+     });
     
     
 /**OnCreate over**/    
