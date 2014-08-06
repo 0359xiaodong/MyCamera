@@ -5,18 +5,45 @@
     android:orientation="vertical"
     tools:context=".MainActivity" >
 
-    <FrameLayout
+ <FrameLayout
         android:id="@+id/PreviewView"
+       
+        
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.8" >
+         android:layout_weight="0.8" >
+
+        <ImageView
+            android:id="@+id/ChangeCamera"
+            android:layout_width="59.0dip"
+            android:layout_height="34.0dip"
+            android:layout_gravity="right"
+            android:layout_marginRight="5.0dip"
+            
+            android:layout_marginTop="5.0dip"
+            android:contentDescription="@string/Description"
+            android:background="@drawable/menu_bottom_button_changecamera"
+            android:scaleType="fitXY"
+            android:src="@drawable/menu_bottom_button_changecamera" />
+
+        <ImageView
+            android:id="@+id/flashImage"
+            android:layout_width="59.0dip"
+            android:layout_height="34.0dip"
+            android:layout_gravity="top|left|center"
+            android:layout_marginLeft="5.0dip"
+            android:layout_marginTop="5.0dip"
+            android:contentDescription="@string/Description"
+            android:scaleType="fitXY"
+            android:src="@drawable/menu_top_button_flash" />
+
     </FrameLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="0.2"
-        android:background="@drawable/bgtest" >
+        android:background="@drawable/aa" >
 
         <Button
             android:id="@+id/takePhoto"
@@ -34,7 +61,7 @@
             android:layout_alignTop="@+id/Decorate"
             android:layout_marginLeft="9dp"
             android:layout_toLeftOf="@+id/takePhoto"
-            android:background="@drawable/video" />
+            android:background="@drawable/button_share" />
 
         <Button
             android:id="@+id/Decorate"
@@ -46,21 +73,22 @@
             android:background="@drawable/dec" />
 
         <Button
-            android:id="@+id/flashLight"
+            android:id="@+id/setting"
             android:layout_width="55dp"
             android:layout_height="55dp"
             android:layout_alignBaseline="@+id/takePhoto"
             android:layout_alignBottom="@+id/takePhoto"
             android:layout_toRightOf="@+id/takePhoto"
-            android:background="@drawable/button_selector" />
+            android:background="@drawable/menu_bottom_button_settings" />
 
         <ImageView
             android:id="@+id/ThumbsView"
             android:layout_width="55dp"
             android:layout_height="55dp"
             android:layout_alignParentRight="true"
-            android:layout_alignTop="@+id/flashLight"
+            android:layout_alignTop="@+id/setting"
             android:layout_margin="5dp"
+            android:layout_marginTop="@dimen/activity_horizontal_margin"
             android:background="@drawable/pic"
             android:contentDescription="@string/Description" />
 

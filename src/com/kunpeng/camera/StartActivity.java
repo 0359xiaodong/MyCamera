@@ -7,15 +7,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import com.kunpeng.camera.R.drawable;
-
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.hardware.Camera.AutoFocusCallback;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.ShutterCallback;
-import android.media.CamcorderProfile;
+
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
@@ -41,14 +39,23 @@ import android.widget.Toast;
  *
  */
 public class StartActivity extends Activity {
+	
+	
+	
+	//private static final String TAG = "MyLogCat";
+	private static final String TAG = "TAG-AndroidCameraActivity";  
+    
+    public static final int MEDIA_TYPE_IMAGE = 1;   
+    public static final int MEDIA_TYPE_VIDEO = 2;   
+
 	 /** 相机   **/
-    private Camera mCamera;  
+    public static Camera mCamera;  
     /** 预览界面  **/
-    private CameraPreview mPreview;
+    public static CameraPreview mPreview;
     /** 缩略图  **/
     ImageView ThumbsView;
     /** 当前缩略图位置，默认为手机相册位置暂时没有缩略图 **/
-    private Uri mUri=MediaStore.Images.Media.EXTERNAL_CONTENT_URI;;
+    private Uri mUri=MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
    /**相机拍摄区**/
     private FrameLayout mFrameLayout;
     /** MediaPlayer **/
@@ -58,19 +65,21 @@ public class StartActivity extends Activity {
     /**装饰品按钮**/
     private Button Decorate;
     /**视频拍照功能转换按钮**/
-    private Button Change;
+    private ImageView video;
     /**曝光度调整**/
-    private Button expsure;
+    private Button exposure;
     /**闪光灯按钮**/
-    private Button flash;
+    private ImageView flash;
     /**判断闪光灯开关**/
-    private static boolean  flash_open=false;
+    public static boolean  flash_open=true;
+    Property test01=new Property();
     /**相机参数**/
-    Camera.Parameters parameters;
+    private Camera.Parameters parameters ;
     /**录像机**/
-    private MediaRecorder mMediaRecorder;
+    public static MediaRecorder mMediaRecorder;
+    private videoActivity _video;
     /**录像开始与否**/
-    private boolean isRecording = true;
+    private boolean isRecording = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,7 +90,7 @@ public class StartActivity extends Activity {
         /** 禁用锁屏**/
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.test01);
-         
+         System.out.println("\n");
         /** 硬件检查  **/
         if(CheckCameraHardware(this)==false)
         {
@@ -101,31 +110,37 @@ public class StartActivity extends Activity {
          * 
          * @date 2014.8.5
          * **/
-        flash=(Button)findViewById(R.id.flashLight);
+        
+       
+        flash=(ImageView)findViewById(R.id.flashImage);
+        flash.setVisibility(View.VISIBLE);
         flash.setOnClickListener(new OnClickListener(){
-
+        	
 			@Override
 			public void onClick(View arg0) {
 				// TODO Auto-generated method stub
+				 flash_open=test01.init(StartActivity.this);
 				/*如果摄像机打开，点击后关闭，闪光灯图片变为关闭图片*/
 				if(flash_open==true)
 				{
-					parameters = mCamera.getParameters();
+					parameters= mCamera.getParameters();
 					parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
 					mCamera.setParameters(parameters);
 					flash_open=false;
-					flash.setBackgroundResource(R.drawable.flashno);
+					
+					
 				}
 				
-				else if(flash_open==false)
+				else
 				{
-					parameters = mCamera.getParameters();
+					parameters= mCamera.getParameters();
             		parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
 					mCamera.setParameters(parameters);
 					flash_open=true;
-					flash.setBackgroundResource(R.drawable.flash);
+					
 					
 				}
+				test01.writeDate(StartActivity.this, flash_open);
 			}
         	
         	
@@ -153,7 +168,19 @@ public class StartActivity extends Activity {
                         if(isSuccess&&camera!=null)
                         {
                         		mCamera.takePicture(mShutterCallback, null, mPicureCallback);
-                            
+                        		if(flash_open==true)
+                				{
+                        			parameters= mCamera.getParameters();
+                					parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+                					mCamera.setParameters(parameters);
+                				}
+                				
+                				else
+                				{
+                					parameters= mCamera.getParameters();
+                            		parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+                					mCamera.setParameters(parameters);
+                				}
                         }
                     }
                      
@@ -175,7 +202,7 @@ public class StartActivity extends Activity {
                 /** 使用Uri访问当前缩略图  **/
                 Intent intent = new Intent(Intent.ACTION_VIEW); 
                 
-                System.out.println(mUri);
+                Log.v(TAG,"mUri"+mUri);
                 intent.setDataAndType(mUri, "image/*");
                 
                 if(mUri==MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
@@ -195,36 +222,44 @@ public class StartActivity extends Activity {
         }
         });*/
         /**视频拍照转换**/
-     Change=(Button) findViewById(R.id._video);
-     Decorate.setOnClickListener(new OnClickListener(){
+     video=(ImageView) findViewById(R.id.ChangeCamera);
+     video.setOnClickListener(new OnClickListener(){
 
 		@Override
-		public void onClick(View arg0) {
-			// TODO Auto-generated method stub
-			//解锁相机
-			mCamera.unlock();
-		
-			mMediaRecorder=new MediaRecorder();
-			//设置录像摄像头
-			mMediaRecorder.setCamera(mCamera);
-			//设置音频视频读取位置
-			mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
-			mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-			//指定camCorderProfile API 8以上才能使用
-			mMediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH));
-			//指定文件存取位置getOutputMediaFile(MEDIA_TYPE_VIDEO).toString()
-			
-			
-			mMediaRecorder.setPreviewDisplay(mPreview.getHolder().getSurface());
-		
-		}
+		public void onClick(View v) {  
+            if (isRecording) {  
+                // 停止录像，释放camera  
+                mMediaRecorder.stop();   
+                _video.releaseMediaRecorder();   
+
+                mCamera.lock();   
+
+                // 通知用户录像已停止  
+                /*video.setText("开始录像");*/  
+
+                isRecording = false;  
+            } else {  
+                // 初始化视频camera  
+                if (_video.prepareVideoRecorder()) {  
+                    mMediaRecorder.start();  
+
+                    // 通知用户录像已开始   
+                    /*video.setText("停止录像"); */ 
+
+                    isRecording = true;  
+                } else {  
+                    // 准备未能完成，释放camera  
+                    _video.releaseMediaRecorder();  
+                }  
+            }  
+        }  
+    });  
 		    	 
-     });
     
     
 /**OnCreate over**/    
 } 
-       
+
     /** 快门回调接口  **/
     private ShutterCallback mShutterCallback=new ShutterCallback()
     {
@@ -233,13 +268,6 @@ public class StartActivity extends Activity {
         {
             mPlayer=new MediaPlayer();
             mPlayer=MediaPlayer.create(StartActivity.this,R.raw.shutter);
-            try {
-                mPlayer.prepare();
-            } catch (IllegalStateException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
             mPlayer.start();
         }
     };
@@ -323,6 +351,7 @@ public class StartActivity extends Activity {
             mCamera = getCameraInstance();
             mCamera.startPreview(); 
         }
+        
     }
 
    
