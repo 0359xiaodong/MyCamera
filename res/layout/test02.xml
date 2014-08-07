@@ -5,44 +5,17 @@
     android:orientation="vertical"
     tools:context=".MainActivity" >
 
- <FrameLayout
-        android:id="@+id/PreviewView"
-       
         
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-         android:layout_weight="0.8" > 
  <SurfaceView 
      android:layout_gravity="center" 
-     android:id="@+id/svCameraPreview" 
+     android:id="@+id/sur" 
      android:layout_width="fill_parent" 
-     android:layout_height="fill_parent" 
+     android:layout_height="0dp" 
+     android:layout_weight="0.8"
      />
-       <ImageView
-            android:id="@+id/ChangeCamera"
-            android:layout_width="59.0dip"
-            android:layout_height="34.0dip"
-            android:layout_gravity="right"
-            android:layout_marginRight="5.0dip"
-            
-            android:layout_marginTop="5.0dip"
-            android:contentDescription="@string/Description"
-            android:background="@drawable/menu_bottom_button_changecamera"
-            android:scaleType="fitXY"
-            android:src="@drawable/menu_bottom_button_changecamera" />
+       
 
-        <ImageView
-            android:id="@+id/flashImage"
-            android:layout_width="59.0dip"
-            android:layout_height="34.0dip"
-            android:layout_gravity="top|left|center"
-            android:layout_marginLeft="5.0dip"
-            android:layout_marginTop="5.0dip"
-            android:contentDescription="@string/Description"
-            android:scaleType="fitXY"
-            android:src="@drawable/menu_top_button_flash" /> 
-
-     </FrameLayout> 
+   
 
     <RelativeLayout
         android:layout_width="match_parent"

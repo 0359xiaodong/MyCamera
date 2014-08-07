@@ -7,7 +7,7 @@ import android.content.Context;
 import android.hardware.Camera;
 import android.util.Log;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+import android.view.SurfaceView;;
 
 /** 一个基本的相机预览界面类  **/
 @SuppressLint("ViewConstructor")
@@ -31,7 +31,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         // 已过期的设置，但版本低于3.0的Android还需要
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS); 
     }
- 
+   
     @Override
     public void surfaceChanged(SurfaceHolder arg0, int arg1, int arg2, int arg3) 
     {
@@ -41,6 +41,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     @Override
     public void surfaceCreated(SurfaceHolder holder) 
     {
+    	
        try {
         mCamera.setPreviewDisplay(holder);
         mCamera.startPreview();
@@ -76,6 +77,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         } 
          
     }
+
+
+	
     
     
     

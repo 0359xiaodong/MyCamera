@@ -13,16 +13,18 @@ import android.hardware.Camera;
 import android.hardware.Camera.AutoFocusCallback;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.ShutterCallback;
-
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -38,6 +40,7 @@ import android.widget.Toast;
  * @author magiwen
  *
  */
+@TargetApi(Build.VERSION_CODES.GINGERBREAD)
 public class StartActivity extends Activity {
 	
 	
@@ -62,12 +65,15 @@ public class StartActivity extends Activity {
     private MediaPlayer mPlayer;
     /** 拍照按钮  **/
     Button BtnCapture;
+    /**前置后置摄像头**/
+    private ImageView exchange;
+    private boolean IsBack=true;
     /**装饰品按钮**/
-    private Button Decorate;
+  //  private Button Decorate;
     /**视频拍照功能转换按钮**/
-    private ImageView video;
+    private Button video;
     /**曝光度调整**/
-    private Button exposure;
+  //  private Button exposure;
     /**闪光灯按钮**/
     private ImageView flash;
     /**判断闪光灯开关**/
@@ -77,9 +83,11 @@ public class StartActivity extends Activity {
     private Camera.Parameters parameters ;
     /**录像机**/
     public static MediaRecorder mMediaRecorder;
-    private videoActivity _video;
+   // private videoActivity _video=new videoActivity();
     /**录像开始与否**/
-    private boolean isRecording = false;
+   // private boolean isRecording = false;
+    //数据库
+    public static SQLiteDatabase db = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,24 +106,98 @@ public class StartActivity extends Activity {
             return;
         }
          
-        /** 获取相机  **/
-        mCamera=getCameraInstance();
-        /** 获取预览界面   **/
-        mPreview = new CameraPreview(this, mCamera); 
-        mFrameLayout= (FrameLayout)findViewById(R.id.PreviewView); 
-        mFrameLayout.addView(mPreview); 
-        mCamera.startPreview();
+       /**获取相机**/
+       mCamera=getCameraInstance(findBackCamera());
+       
+       /** 获取预览界面  **/
+       mPreview = new CameraPreview(this, mCamera); 
+       mFrameLayout= (FrameLayout)findViewById(R.id.PreviewView); 
+       
+       mFrameLayout.addView(mPreview); 
+       
+       mCamera.startPreview();
+       
+       
+        /**
+           *前后 摄像头转换
+           *同时获取相机
+         ** 如果是前置摄像头，则取消闪光灯的开关功能
+        *  shutter也需要关掉
+        *  有bug，需要修改
+         */
+         exchange=(ImageView)findViewById(R.id.ChangeCamera);
+         exchange.setOnClickListener(new OnClickListener(){
+
+ 			@Override
+ 			public void onClick(View v) {
+ 				// TODO Auto-generated method stub
+ 				 mCamera.stopPreview();//停掉原来摄像头的预览
+                 mCamera.release();//释放资源
+                 mCamera = null;//取消原来摄像头
+                 //mCamera = Camera.open(i);//打开当前选中的摄像头
+ 				if(Camera.getNumberOfCameras()==2&&IsBack)
+ 				{
+ 					int cameraIndex;
+ 					cameraIndex=findFrontCamera();
+ 					if(cameraIndex==-1)
+ 					{
+ 						cameraIndex=findBackCamera();
+ 					}
+ 					mCamera=getCameraInstance(cameraIndex);
+ 					IsBack=false;
+ 					mPreview = new CameraPreview(StartActivity.this, mCamera); 
+ 				       
+ 				}
+ 				else if(Camera.getNumberOfCameras()==2&&!IsBack)
+ 				{
+ 					mCamera=getCameraInstance(findBackCamera());
+ 					IsBack=true;
+ 					mPreview = new CameraPreview(StartActivity.this, mCamera); 
+				  
+ 				}
+ 				else if(Camera.getNumberOfCameras()==1)
+ 				{
+ 					mCamera=getCameraInstance(findBackCamera());
+ 					IsBack=true;
+ 					 mPreview = new CameraPreview(StartActivity.this, mCamera);   
+ 				}
+               
+ 				mFrameLayout= (FrameLayout)findViewById(R.id.PreviewView);
+ 			    mFrameLayout.addView(mPreview); 
+ 				mCamera.startPreview();
+ 			}
+ 			
+         });
+      
+       
+        /**数据库的调用**/
+       /* databaseHelper database = new databaseHelper(StartActivity.this);//这段代码放到Activity类中才用this 
+        
+        db = database.getReadableDatabase();
+        ContentValues cv = new ContentValues();//实例化一个ContentValues用来装载待插入的数据cv.put("username","Jack Johnson");//添加用户名 
+        cv.put("flashopen",""+flash_open);
+        cv.put("user", "");//添加密码 
+        db.insert("user",null,cv);//执行插入操作
+        Cursor c = db.query("user",null,null,null,null,null,null);//查询并获得游标 
+        if(c.moveToFirst()){//判断游标是否为空 
+            for(int i=0;i<c.getCount();i++){ 
+                c.move(i);//移动到指定记录 
+                //String username = c.getString(c.getColumnIndex("user");                
+            } 
+            
+        }
+        String nowState = c.getString(c.getColumnIndex("flashopen")); 
+        Boolean flashtmp=new Boolean(nowState);
+        flash_open=flashtmp;*/
         
         /**闪光灯功能的实现
          * 
          * @date 2014.8.5
          * **/
-        
-       
         flash=(ImageView)findViewById(R.id.flashImage);
-        flash.setVisibility(View.VISIBLE);
+
         flash.setOnClickListener(new OnClickListener(){
-        	
+        	  	
 			@Override
 			public void onClick(View arg0) {
 				// TODO Auto-generated method stub
@@ -126,9 +208,7 @@ public class StartActivity extends Activity {
 					parameters= mCamera.getParameters();
 					parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
 					mCamera.setParameters(parameters);
-					flash_open=false;
-					
-					
+					flash_open=false;	
 				}
 				
 				else
@@ -221,38 +301,16 @@ public class StartActivity extends Activity {
               
         }
         });*/
-        /**视频拍照转换**/
-     video=(ImageView) findViewById(R.id.ChangeCamera);
+        /**视频录像**/
+     video=(Button) findViewById(R.id._videoP);
      video.setOnClickListener(new OnClickListener(){
-
+    	
 		@Override
 		public void onClick(View v) {  
-            if (isRecording) {  
-                // 停止录像，释放camera  
-                mMediaRecorder.stop();   
-                _video.releaseMediaRecorder();   
-
-                mCamera.lock();   
-
-                // 通知用户录像已停止  
-                /*video.setText("开始录像");*/  
-
-                isRecording = false;  
-            } else {  
-                // 初始化视频camera  
-                if (_video.prepareVideoRecorder()) {  
-                    mMediaRecorder.start();  
-
-                    // 通知用户录像已开始   
-                    /*video.setText("停止录像"); */ 
-
-                    isRecording = true;  
-                } else {  
-                    // 准备未能完成，释放camera  
-                    _video.releaseMediaRecorder();  
-                }  
-            }  
-        }  
+			Intent intent=new Intent(StartActivity.this,videoActivity.class);
+			//intent.setClass(StartActivity.this,videoActivity.class);
+			startActivity(intent);
+		}
     });  
 		    	 
     
@@ -308,10 +366,10 @@ public class StartActivity extends Activity {
      
      
     /** 官方建议的安全地访问摄像头的方法  **/
-    public static Camera getCameraInstance(){ 
+    public static Camera getCameraInstance(int Cameraid){ 
         Camera c = null; 
         try { 
-            c = Camera.open();
+            c = Camera.open(Cameraid);
         } 
         catch (Exception e){
         Log.d("TAG", "Error is "+e.getMessage());
@@ -348,11 +406,48 @@ public class StartActivity extends Activity {
         super.onResume();
         if(mCamera==null)
         {
-            mCamera = getCameraInstance();
+        	//待用
+        	/*int cameraIndex;
+				cameraIndex=findFrontCamera();
+				if(cameraIndex==-1)
+				{
+					cameraIndex=findBackCamera();
+				}
+				mCamera=getCameraInstance(cameraIndex);*/
+        	
+            mCamera=getCameraInstance(findBackCamera());
             mCamera.startPreview(); 
         }
         
     }
-
-   
+    @SuppressWarnings("unused")
+	private int findFrontCamera()
+	{
+		
+		int cameraCount=0;
+		Camera.CameraInfo camerainfo=new Camera.CameraInfo();
+		cameraCount=Camera.getNumberOfCameras();
+		for(int cameraId=0;cameraId<cameraCount;cameraId++)
+		{
+			Camera.getCameraInfo(cameraId,camerainfo);
+			if(camerainfo.facing==Camera.CameraInfo.CAMERA_FACING_FRONT)
+				return cameraId;
+		}
+		return -1;
+	}
+    @SuppressWarnings("unused")
+	private int findBackCamera()
+	{
+		
+		int cameraCount=0;
+		Camera.CameraInfo camerainfo=new Camera.CameraInfo();
+		cameraCount=Camera.getNumberOfCameras();
+		for(int cameraId=0;cameraId<cameraCount;cameraId++)
+		{
+			Camera.getCameraInfo(cameraId,camerainfo);
+			if(camerainfo.facing==Camera.CameraInfo.CAMERA_FACING_BACK)
+				return cameraId;
+		}
+		return -1;
+	}
 }
