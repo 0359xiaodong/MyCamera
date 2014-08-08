@@ -26,6 +26,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
@@ -45,12 +46,9 @@ public class StartActivity extends Activity {
 	
 	
 	
-	//private static final String TAG = "MyLogCat";
 	private static final String TAG = "TAG-AndroidCameraActivity";  
-    
     public static final int MEDIA_TYPE_IMAGE = 1;   
     public static final int MEDIA_TYPE_VIDEO = 2;   
-
 	 /** 相机   **/
     public static Camera mCamera;  
     /** 预览界面  **/
@@ -69,23 +67,26 @@ public class StartActivity extends Activity {
     private ImageView exchange;
     private boolean IsBack=true;
     /**装饰品按钮**/
-  //  private Button Decorate;
+    private Button Decorate;
     /**视频拍照功能转换按钮**/
     private Button video;
     /**曝光度调整**/
-  //  private Button exposure;
+    private Button exposure;
+    
+    
+    private SurfaceView mSurfaceView;
     /**闪光灯按钮**/
     private ImageView flash;
     /**判断闪光灯开关**/
-    public static boolean  flash_open=true;
-    Property test01=new Property();
+    public  static boolean  flash_open=true;
+    public  Property test1=new Property(StartActivity.this);
     /**相机参数**/
     private Camera.Parameters parameters ;
     /**录像机**/
     public static MediaRecorder mMediaRecorder;
    // private videoActivity _video=new videoActivity();
     /**录像开始与否**/
-   // private boolean isRecording = false;
+    private boolean isRecording = false;
     //数据库
     public static SQLiteDatabase db = null;
     @Override
@@ -98,74 +99,67 @@ public class StartActivity extends Activity {
         /** 禁用锁屏**/
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.test01);
-         System.out.println("\n");
         /** 硬件检查  **/
         if(CheckCameraHardware(this)==false)
         {
             Toast.makeText(this, "很抱歉，您的设备可能不支持摄像头功能！", Toast.LENGTH_SHORT).show();
             return;
         }
-         
+      /**获取用户配置**/
+      //flash_open=test1.init(StartActivity.this);
+      Log.v("配置信息",""+flash_open);
        /**获取相机**/
-       mCamera=getCameraInstance(findBackCamera());
-       
+       mCamera=getCameraInstance(findBackCamera()); 
        /** 获取预览界面  **/
-       mPreview = new CameraPreview(this, mCamera); 
-       mFrameLayout= (FrameLayout)findViewById(R.id.PreviewView); 
-       
-       mFrameLayout.addView(mPreview); 
-       
        mCamera.startPreview();
-       
-       
-        /**
-           *前后 摄像头转换
-           *同时获取相机
-         ** 如果是前置摄像头，则取消闪光灯的开关功能
-        *  shutter也需要关掉
-        *  有bug，需要修改
-         */
-         exchange=(ImageView)findViewById(R.id.ChangeCamera);
-         exchange.setOnClickListener(new OnClickListener(){
-
- 			@Override
- 			public void onClick(View v) {
- 				// TODO Auto-generated method stub
- 				 mCamera.stopPreview();//停掉原来摄像头的预览
-                 mCamera.release();//释放资源
-                 mCamera = null;//取消原来摄像头
-                 //mCamera = Camera.open(i);//打开当前选中的摄像头
- 				if(Camera.getNumberOfCameras()==2&&IsBack)
+      mFrameLayout= (FrameLayout)findViewById(R.id.PreviewView); 
+      mSurfaceView=(SurfaceView)findViewById(R.id.svCameraPreview);
+      mSurfaceView= new CameraPreview(this, mCamera);
+      mFrameLayout.addView(mSurfaceView);
+      
+      
+      
+      
+       /**前后摄像头转换**/
+       exchange=(ImageView)findViewById(R.id.ChangeCamera);
+       exchange.setOnClickListener(new OnClickListener(){
+ 		@Override
+ 		public void onClick(View v) {
+ 			// TODO Auto-generated method stub
+ 			mCamera.stopPreview();//停掉原来摄像头的预览
+            mCamera.release();//释放资源
+            mCamera = null;//取消原来摄像头   
+             
+            if(Camera.getNumberOfCameras()==2&&IsBack)
+ 			{
+ 				int cameraIndex;
+ 				cameraIndex=findFrontCamera();
+ 				if(cameraIndex==-1)
  				{
- 					int cameraIndex;
- 					cameraIndex=findFrontCamera();
- 					if(cameraIndex==-1)
- 					{
- 						cameraIndex=findBackCamera();
- 					}
- 					mCamera=getCameraInstance(cameraIndex);
- 					IsBack=false;
- 					mPreview = new CameraPreview(StartActivity.this, mCamera); 
- 				       
+ 					cameraIndex=findBackCamera();
  				}
- 				else if(Camera.getNumberOfCameras()==2&&!IsBack)
- 				{
- 					mCamera=getCameraInstance(findBackCamera());
- 					IsBack=true;
- 					mPreview = new CameraPreview(StartActivity.this, mCamera); 
+ 				mCamera=getCameraInstance(cameraIndex);
+ 				IsBack=false;
+ 				//mPreview = new CameraPreview(StartActivity.this, mCamera);        
+ 				}
+ 			else if(Camera.getNumberOfCameras()==2&&!IsBack)
+ 			{
+ 				mCamera=getCameraInstance(findBackCamera());
+ 				IsBack=true;
+ 				//mPreview = new CameraPreview(StartActivity.this, mCamera); 
 				  
- 				}
- 				else if(Camera.getNumberOfCameras()==1)
- 				{
- 					mCamera=getCameraInstance(findBackCamera());
- 					IsBack=true;
- 					 mPreview = new CameraPreview(StartActivity.this, mCamera);   
- 				}
-               
- 				mFrameLayout= (FrameLayout)findViewById(R.id.PreviewView);
- 			    mFrameLayout.addView(mPreview); 
- 				mCamera.startPreview();
  			}
+ 			else if(Camera.getNumberOfCameras()==1)
+ 			{
+ 				mCamera=getCameraInstance(findBackCamera());
+ 				IsBack=true;
+ 				//mPreview = new CameraPreview(StartActivity.this, mCamera);   
+ 			}
+            mPreview = new CameraPreview(StartActivity.this, mCamera);
+ 			mFrameLayout= (FrameLayout)findViewById(R.id.PreviewView);
+ 			mFrameLayout.addView(mPreview); 
+ 			mCamera.startPreview();
+ 		}
  			
          });
       
@@ -191,39 +185,34 @@ public class StartActivity extends Activity {
         flash_open=flashtmp;*/
         
         /**闪光灯功能的实现
-         * 
          * @date 2014.8.5
          * **/
         flash=(ImageView)findViewById(R.id.flashImage);
-
-        flash.setOnClickListener(new OnClickListener(){
-        	  	
-			@Override
-			public void onClick(View arg0) {
-				// TODO Auto-generated method stub
-				 flash_open=test01.init(StartActivity.this);
-				/*如果摄像机打开，点击后关闭，闪光灯图片变为关闭图片*/
-				if(flash_open==true)
-				{
-					parameters= mCamera.getParameters();
-					parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
-					mCamera.setParameters(parameters);
-					flash_open=false;	
-				}
+        flash.setOnClickListener(new OnClickListener(){  	
+		@Override
+		public void onClick(View arg0) {
+			// TODO Auto-generated method stub
 				
-				else
-				{
-					parameters= mCamera.getParameters();
-            		parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
-					mCamera.setParameters(parameters);
-					flash_open=true;
-					
-					
-				}
-				test01.writeDate(StartActivity.this, flash_open);
+			/*如果摄像机打开，点击后关闭，闪光灯图片变为关闭图片*/
+			if(flash_open==true)
+			{
+				parameters= mCamera.getParameters();
+				parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+				mCamera.setParameters(parameters);
+				flash_open=false;
+				test1.writeDate(StartActivity.this, flash_open);
 			}
-        	
-        	
+				
+			else
+			{
+				parameters= mCamera.getParameters();
+            	parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+				mCamera.setParameters(parameters);
+				flash_open=true;
+				test1.writeDate(StartActivity.this, flash_open);
+			}
+			
+			}
         });
 
        
@@ -237,17 +226,15 @@ public class StartActivity extends Activity {
             public void onClick(View v) 
             {
                 /** 使用takePicture()方法完成拍照  **/
-            	
                 mCamera.autoFocus(new AutoFocusCallback()
                 {
-                	
                     /** 自动聚焦聚焦后完成拍照  **/
                     @Override
                     public void onAutoFocus(boolean isSuccess, Camera camera) 
                     {
-                        if(isSuccess&&camera!=null)
+                        if(isSuccess&&camera!=null&&IsBack)
                         {
-                        		mCamera.takePicture(mShutterCallback, null, mPicureCallback);
+                        		
                         		if(flash_open==true)
                 				{
                         			parameters= mCamera.getParameters();
@@ -258,9 +245,17 @@ public class StartActivity extends Activity {
                 				else
                 				{
                 					parameters= mCamera.getParameters();
-                            		parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+                            		parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
                 					mCamera.setParameters(parameters);
                 				}
+                        		mCamera.takePicture(mShutterCallback, null, mPicureCallback);
+                        }
+                        else
+                        {
+                        	parameters= mCamera.getParameters();
+                    		parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+        					mCamera.setParameters(parameters);
+        					mCamera.takePicture(null, null, mPicureCallback);
                         }
                     }
                      
@@ -273,18 +268,15 @@ public class StartActivity extends Activity {
         /** 相机缩略图实现  **/
          
         ThumbsView = (ImageView)findViewById(R.id.ThumbsView);
-        
         ThumbsView.setOnClickListener(new OnClickListener()
         {
             @Override
             public void onClick(View v) 
             {
                 /** 使用Uri访问当前缩略图  **/
-                Intent intent = new Intent(Intent.ACTION_VIEW); 
-                
+                Intent intent = new Intent(Intent.ACTION_VIEW);    
                 Log.v(TAG,"mUri"+mUri);
                 intent.setDataAndType(mUri, "image/*");
-                
                 if(mUri==MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
                 {
                 	return;
@@ -304,20 +296,25 @@ public class StartActivity extends Activity {
         /**视频录像**/
      video=(Button) findViewById(R.id._videoP);
      video.setOnClickListener(new OnClickListener(){
-    	
 		@Override
 		public void onClick(View v) {  
 			Intent intent=new Intent(StartActivity.this,videoActivity.class);
 			//intent.setClass(StartActivity.this,videoActivity.class);
 			startActivity(intent);
 		}
-    });  
-		    	 
-    
-    
+    }); 
+     /**曝光度调整**/
+     exposure=(Button)findViewById(R.id.setting);
+     exposure.setOnClickListener(new OnClickListener()
+     {
+     @Override
+     public void onClick(View v)
+     {
+    	 
+     }
+     });
 /**OnCreate over**/    
 } 
-
     /** 快门回调接口  **/
     private ShutterCallback mShutterCallback=new ShutterCallback()
     {
@@ -329,9 +326,6 @@ public class StartActivity extends Activity {
             mPlayer.start();
         }
     };
-     
-    
-    
     /** 拍照回调接口  **/
     private PictureCallback mPicureCallback=new PictureCallback()
     {
@@ -363,8 +357,6 @@ public class StartActivity extends Activity {
             }
         }
     };
-     
-     
     /** 官方建议的安全地访问摄像头的方法  **/
     public static Camera getCameraInstance(int Cameraid){ 
         Camera c = null; 
@@ -376,7 +368,6 @@ public class StartActivity extends Activity {
         } 
         return c;
     }
-     
     /** 检查设备是否支持摄像头  **/
     private boolean CheckCameraHardware(Context mContext)
     {
@@ -389,7 +380,12 @@ public class StartActivity extends Activity {
             return false; 
         } 
     }
-     
+     @Override
+     protected void onStart()
+     {
+    	 super.onStart();
+    	 flash_open=test1.init(StartActivity.this);
+     }
     @Override
     protected void onPause() {
         super.onPause();
@@ -398,9 +394,16 @@ public class StartActivity extends Activity {
             mCamera.release();
             mCamera=null;
         }
+        test1.writeDate(StartActivity.this, flash_open);
     }
  
     @Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+		test1.writeDate(StartActivity.this, flash_open);
+	}
+	@Override
     protected void onResume() 
     {
         super.onResume();
@@ -418,9 +421,9 @@ public class StartActivity extends Activity {
             mCamera=getCameraInstance(findBackCamera());
             mCamera.startPreview(); 
         }
-        
+        test1.writeDate(StartActivity.this, flash_open);
     }
-    @SuppressWarnings("unused")
+  
 	private int findFrontCamera()
 	{
 		
@@ -435,7 +438,7 @@ public class StartActivity extends Activity {
 		}
 		return -1;
 	}
-    @SuppressWarnings("unused")
+   
 	private int findBackCamera()
 	{
 		
@@ -450,4 +453,10 @@ public class StartActivity extends Activity {
 		}
 		return -1;
 	}
+	/*public SurfaceView getmSurfaceView() {
+		return mSurfaceView;
+	}
+	public void setmSurfaceView(SurfaceView mSurfaceView) {
+		this.mSurfaceView = mSurfaceView;
+	}*/
 }

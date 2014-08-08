@@ -12,13 +12,15 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
          android:layout_weight="0.8" > 
- <SurfaceView 
+  <SurfaceView 
      android:layout_gravity="center" 
      android:id="@+id/svCameraPreview" 
      android:layout_width="fill_parent" 
      android:layout_height="fill_parent" 
-     />
-       <ImageView
+     /> 
+     
+ 
+ <ImageView
             android:id="@+id/ChangeCamera"
             android:layout_width="59.0dip"
             android:layout_height="34.0dip"
@@ -40,7 +42,7 @@
             android:layout_marginTop="5.0dip"
             android:contentDescription="@string/Description"
             android:scaleType="fitXY"
-            android:src="@drawable/menu_top_button_flash" /> 
+            android:src="@drawable/menu_top_button_flash" />
 
      </FrameLayout> 
 

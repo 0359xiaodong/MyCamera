@@ -4,6 +4,8 @@ import java.io.IOException;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.hardware.Camera;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -18,6 +20,13 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     /** SurfaceHolder **/
     private SurfaceHolder mHolder;
      
+    
+    @Override  
+    protected void onDraw(Canvas canvas) {  
+    	Paint mPaint=new Paint();
+        canvas.drawLine(10,10,500,500, mPaint);  
+        super.onDraw(canvas);  
+    }  
     /** CamreaPreview¹¹Ôìº¯Êý   **/
     @SuppressWarnings("deprecation")
     public CameraPreview(Context mContext,Camera mCamera) 
