@@ -11,15 +11,16 @@
         
         android:layout_width="match_parent"
         android:layout_height="0dp"
-         android:layout_weight="0.8" > 
-  <SurfaceView 
+         android:layout_weight="0.8"
+          > 
+  <!--  <SurfaceView 
      android:layout_gravity="center" 
      android:id="@+id/svCameraPreview" 
      android:layout_width="fill_parent" 
      android:layout_height="fill_parent" 
-     /> 
-     
- 
+     />  
+      -->
+
  <ImageView
             android:id="@+id/ChangeCamera"
             android:layout_width="59.0dip"
@@ -43,7 +44,6 @@
             android:contentDescription="@string/Description"
             android:scaleType="fitXY"
             android:src="@drawable/menu_top_button_flash" />
-
      </FrameLayout> 
 
     <RelativeLayout
@@ -61,33 +61,6 @@
             android:layout_margin="9dp"
             android:background="@drawable/take" />
 
-        <Button
-            android:id="@+id/_videoP"
-            android:layout_width="55dp"
-            android:layout_height="55dp"
-            android:layout_alignTop="@+id/Decorate"
-            android:layout_marginLeft="9dp"
-            android:layout_toLeftOf="@+id/takePhoto"
-            android:background="@drawable/button_sensor1" />
-
-        <Button
-            android:id="@+id/Decorate"
-            android:layout_width="55dp"
-            android:layout_height="55dp"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:layout_toLeftOf="@id/_videoP"
-            android:background="@drawable/dec" />
-
-        <Button
-            android:id="@+id/setting"
-            android:layout_width="55dp"
-            android:layout_height="55dp"
-            android:layout_alignBaseline="@+id/takePhoto"
-            android:layout_alignBottom="@+id/takePhoto"
-            android:layout_toRightOf="@+id/takePhoto"
-            android:background="@drawable/menu_bottom_button_settings" />
-
         <ImageView
             android:id="@+id/ThumbsView"
             android:layout_width="55dp"
@@ -98,6 +71,35 @@
             android:layout_marginTop="@dimen/activity_horizontal_margin"
             android:background="@drawable/pic"
             android:contentDescription="@string/Description" />
+
+        <Button
+            android:id="@+id/Decorate"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_alignBaseline="@+id/takePhoto"
+            android:layout_alignBottom="@+id/takePhoto"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="18dp"
+            android:background="@drawable/dec" />
+
+        <Button
+            android:id="@+id/_videoP"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_alignTop="@+id/ThumbsView"
+            android:layout_marginRight="12dp"
+            android:layout_toLeftOf="@+id/takePhoto"
+            android:background="@drawable/button_sensor1" />
+
+        <Button
+            android:id="@+id/setting"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_alignBaseline="@+id/takePhoto"
+            android:layout_alignBottom="@+id/takePhoto"
+            android:layout_marginLeft="13dp"
+            android:layout_toRightOf="@+id/takePhoto"
+            android:background="@drawable/menu_bottom_button_settings" />
 
     </RelativeLayout>
 

@@ -26,6 +26,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -45,7 +48,7 @@ import android.widget.Toast;
 public class StartActivity extends Activity {
 	
 	
-	
+	public static int cameraPosition;
 	private static final String TAG = "TAG-AndroidCameraActivity";  
     public static final int MEDIA_TYPE_IMAGE = 1;   
     public static final int MEDIA_TYPE_VIDEO = 2;   
@@ -74,7 +77,7 @@ public class StartActivity extends Activity {
     private Button exposure;
     
     
-    private SurfaceView mSurfaceView;
+    //private SurfaceView mSurfaceView;
     /**闪光灯按钮**/
     private ImageView flash;
     /**判断闪光灯开关**/
@@ -113,53 +116,59 @@ public class StartActivity extends Activity {
        /** 获取预览界面  **/
        mCamera.startPreview();
       mFrameLayout= (FrameLayout)findViewById(R.id.PreviewView); 
-      mSurfaceView=(SurfaceView)findViewById(R.id.svCameraPreview);
-      mSurfaceView= new CameraPreview(this, mCamera);
-      mFrameLayout.addView(mSurfaceView);
+     // mSurfaceView=(SurfaceView)findViewById(R.id.svCameraPreview);
+      mPreview= new CameraPreview(this, mCamera);
+      mFrameLayout.addView(mPreview);
       
+    
       
       
       
        /**前后摄像头转换**/
        exchange=(ImageView)findViewById(R.id.ChangeCamera);
        exchange.setOnClickListener(new OnClickListener(){
+    	   
  		@Override
  		public void onClick(View v) {
  			// TODO Auto-generated method stub
  			mCamera.stopPreview();//停掉原来摄像头的预览
             mCamera.release();//释放资源
             mCamera = null;//取消原来摄像头   
-             
+            mFrameLayout.removeView(mPreview);//清除预览区
             if(Camera.getNumberOfCameras()==2&&IsBack)
  			{
- 				int cameraIndex;
- 				cameraIndex=findFrontCamera();
- 				if(cameraIndex==-1)
+ 				
+            	cameraPosition=findFrontCamera();
+ 				if(cameraPosition==-1)
  				{
- 					cameraIndex=findBackCamera();
+ 					cameraPosition=findBackCamera();
  				}
- 				mCamera=getCameraInstance(cameraIndex);
+ 				mCamera=getCameraInstance(cameraPosition);
  				IsBack=false;
  				//mPreview = new CameraPreview(StartActivity.this, mCamera);        
  				}
  			else if(Camera.getNumberOfCameras()==2&&!IsBack)
  			{
- 				mCamera=getCameraInstance(findBackCamera());
+ 				cameraPosition=findBackCamera();
+ 				mCamera=getCameraInstance(cameraPosition);
  				IsBack=true;
- 				//mPreview = new CameraPreview(StartActivity.this, mCamera); 
+ 				
 				  
  			}
  			else if(Camera.getNumberOfCameras()==1)
  			{
- 				mCamera=getCameraInstance(findBackCamera());
+ 				cameraPosition=findBackCamera();
+ 				mCamera=getCameraInstance(cameraPosition);
  				IsBack=true;
- 				//mPreview = new CameraPreview(StartActivity.this, mCamera);   
+ 				  
  			}
-            mPreview = new CameraPreview(StartActivity.this, mCamera);
- 			mFrameLayout= (FrameLayout)findViewById(R.id.PreviewView);
+            mCamera.startPreview();
+            mPreview = new CameraPreview(StartActivity.this, mCamera); 
+ 			//mFrameLayout= (FrameLayout)findViewById(R.id.PreviewView);
  			mFrameLayout.addView(mPreview); 
- 			mCamera.startPreview();
+ 			
  		}
+ 		
  			
          });
       
@@ -386,17 +395,48 @@ public class StartActivity extends Activity {
     	 super.onStart();
     	 flash_open=test1.init(StartActivity.this);
      }
+     @Override
+     protected void onRestart()
+     {
+    	 super.onRestart();
+    	 super.onResume();
+         if(mCamera==null)
+         {
+         	
+         	 mCamera=getCameraInstance(findBackCamera()); //cameraPosition
+         	 mCamera.startPreview();
+         	 mPreview = new CameraPreview(StartActivity.this, mCamera); 
+    		 mFrameLayout.addView(mPreview);
+    
+         }
+     }
     @Override
     protected void onPause() {
         super.onPause();
         if(mCamera!=null)
         {
-            mCamera.release();
-            mCamera=null;
+            mCamera.stopPreview();//停掉原来摄像头的预览
+            mCamera.release();//释放资源
+            mCamera = null;//取消原来摄像头 
+            mFrameLayout.removeView(mPreview);//清除预览区
         }
         test1.writeDate(StartActivity.this, flash_open);
     }
- 
+ @Override
+ protected void onStop()
+ {
+	 super.onStop();
+	 test1.writeDate(StartActivity.this, flash_open);
+	 if(mCamera!=null)
+     {
+         mCamera.stopPreview();//停掉原来摄像头的预览
+         mCamera.release();//释放资源
+         mCamera = null;//取消原来摄像头 
+         mFrameLayout.removeView(mPreview);//清除预览区
+     }
+     test1.writeDate(StartActivity.this, flash_open);
+	 
+ }
     @Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
@@ -409,19 +449,15 @@ public class StartActivity extends Activity {
         super.onResume();
         if(mCamera==null)
         {
-        	//待用
-        	/*int cameraIndex;
-				cameraIndex=findFrontCamera();
-				if(cameraIndex==-1)
-				{
-					cameraIndex=findBackCamera();
-				}
-				mCamera=getCameraInstance(cameraIndex);*/
         	
-            mCamera=getCameraInstance(findBackCamera());
-            mCamera.startPreview(); 
+        	 mCamera=getCameraInstance(findBackCamera()); //cameraPosition
+        	 mCamera.startPreview();
+        	 mPreview = new CameraPreview(StartActivity.this, mCamera); 
+   			 mFrameLayout.addView(mPreview);
+        	
+             
         }
-        test1.writeDate(StartActivity.this, flash_open);
+        //test1.writeDate(StartActivity.this, flash_open);
     }
   
 	private int findFrontCamera()
@@ -452,6 +488,30 @@ public class StartActivity extends Activity {
 				return cameraId;
 		}
 		return -1;
+	}
+	//添加菜单选项
+	public boolean onCreateOptionsMenu(Menu menu)
+	{
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.start, menu);
+		return true;
+	}
+	public boolean onOptionsItemSelected(MenuItem item)
+	{
+		int item_id = item.getItemId();
+		switch(item_id)
+		{
+		case R.id.action_settings:
+			Intent intent = new Intent();
+			intent.setClass(StartActivity.this,Decoration.class);
+			startActivity(intent);
+			StartActivity.this.finish();
+			break;
+		case R.id.exit:
+			StartActivity.this.finish();
+			break;
+		}
+		return true;
 	}
 	/*public SurfaceView getmSurfaceView() {
 		return mSurfaceView;
