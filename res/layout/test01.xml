@@ -5,7 +5,7 @@
     android:orientation="vertical"
     tools:context=".MainActivity" >
 
- <FrameLayout
+ <RelativeLayout
         android:id="@+id/PreviewView"
        
         
@@ -21,8 +21,8 @@
      />  
       -->
 
- <ImageView
-            android:id="@+id/ChangeCamera"
+    <ImageView
+            android:id="@+id/ChangeCamera1"
             android:layout_width="59.0dip"
             android:layout_height="34.0dip"
             android:layout_gravity="right"
@@ -34,7 +34,7 @@
             android:scaleType="fitXY"
             android:src="@drawable/menu_bottom_button_changecamera" />
 
-        <ImageView
+     <ImageView
             android:id="@+id/flashImage"
             android:layout_width="59.0dip"
             android:layout_height="34.0dip"
@@ -44,7 +44,7 @@
             android:contentDescription="@string/Description"
             android:scaleType="fitXY"
             android:src="@drawable/menu_top_button_flash" />
-     </FrameLayout> 
+     </RelativeLayout>  
 
     <RelativeLayout
         android:layout_width="match_parent"

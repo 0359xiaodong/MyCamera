@@ -26,17 +26,20 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 /**
  * 1.实现主界面大体布局
@@ -61,13 +64,13 @@ public class StartActivity extends Activity {
     /** 当前缩略图位置，默认为手机相册位置暂时没有缩略图 **/
     private Uri mUri=MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
    /**相机拍摄区**/
-    private FrameLayout mFrameLayout;
+    private RelativeLayout mFrameLayout;
     /** MediaPlayer **/
     private MediaPlayer mPlayer;
     /** 拍照按钮  **/
     Button BtnCapture;
     /**前置后置摄像头**/
-    private ImageView exchange;
+    private static ImageView exchange;
     private boolean IsBack=true;
     /**装饰品按钮**/
     private Button Decorate;
@@ -79,7 +82,7 @@ public class StartActivity extends Activity {
     
     //private SurfaceView mSurfaceView;
     /**闪光灯按钮**/
-    private ImageView flash;
+    private static ImageView flash;
     /**判断闪光灯开关**/
     public  static boolean  flash_open=true;
     public  Property test1=new Property(StartActivity.this);
@@ -109,23 +112,56 @@ public class StartActivity extends Activity {
             return;
         }
       /**获取用户配置**/
-      //flash_open=test1.init(StartActivity.this);
+      flash_open=test1.init(StartActivity.this);
       Log.v("配置信息",""+flash_open);
        /**获取相机**/
        mCamera=getCameraInstance(findBackCamera()); 
        /** 获取预览界面  **/
        mCamera.startPreview();
-      mFrameLayout= (FrameLayout)findViewById(R.id.PreviewView); 
+      mFrameLayout= (RelativeLayout)findViewById(R.id.PreviewView); 
      // mSurfaceView=(SurfaceView)findViewById(R.id.svCameraPreview);
       mPreview= new CameraPreview(this, mCamera);
       mFrameLayout.addView(mPreview);
       
-    
+      /**配置两个按钮，闪光灯+摄像头转换**/
+      flash = new ImageView(this);
+
+      LayoutParams params1 = new RelativeLayout.LayoutParams(134,70);
+
+      ((android.widget.RelativeLayout.LayoutParams) params1).addRule(RelativeLayout.ALIGN_PARENT_LEFT,RelativeLayout.ALIGN_PARENT_TOP);
+      
+      flash.setBackgroundResource(R.drawable.menu_top_button_flash);
+      
+      ((android.widget.RelativeLayout.LayoutParams) params1).addRule(RelativeLayout.RIGHT_OF,R.id.ChangeCamera1);
+      
+      ((android.widget.RelativeLayout.LayoutParams) params1).addRule(RelativeLayout.ALIGN_TOP,R.id.ChangeCamera1);
+      
+      flash.setLayoutParams(params1);
+      
+      mFrameLayout.addView(flash);
+
+      exchange = new ImageView(this);
+      
+      LayoutParams params2 = new RelativeLayout.LayoutParams(134,70);
+
+      ((android.widget.RelativeLayout.LayoutParams) params2).addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+      
+     /* ((android.widget.RelativeLayout.LayoutParams) params2).addRule(RelativeLayout.RIGHT_OF,R.id.flashImage);
+      
+      ((android.widget.RelativeLayout.LayoutParams) params2).addRule(RelativeLayout.ALIGN_TOP,R.id.flashImage);*/
+      
+      exchange.setBackgroundResource(R.drawable.menu_bottom_button_changecamera);
       
       
+      //exchange.setLayoutParams(Gravity.RIGHT);
+      exchange.setLayoutParams(params2);
       
+      mFrameLayout.addView(exchange);
+      /**如果闪光灯处于关闭状态，则使用闪光灯关闭的图片**/
+      if(!flash_open)
+    	  flash.setImageResource(R.drawable.menu_button_flash_off);
        /**前后摄像头转换**/
-       exchange=(ImageView)findViewById(R.id.ChangeCamera);
+       //exchange=(ImageView)findViewById(R.id.ChangeCamera);
        exchange.setOnClickListener(new OnClickListener(){
     	   
  		@Override
@@ -134,7 +170,8 @@ public class StartActivity extends Activity {
  			mCamera.stopPreview();//停掉原来摄像头的预览
             mCamera.release();//释放资源
             mCamera = null;//取消原来摄像头   
-            mFrameLayout.removeView(mPreview);//清除预览区
+            //mFrameLayout.removeView(mPreview);//清除预览区
+            mFrameLayout.removeAllViews();
             if(Camera.getNumberOfCameras()==2&&IsBack)
  			{
  				
@@ -145,6 +182,8 @@ public class StartActivity extends Activity {
  				}
  				mCamera=getCameraInstance(cameraPosition);
  				IsBack=false;
+ 				flash.setVisibility(8);
+ 				
  				//mPreview = new CameraPreview(StartActivity.this, mCamera);        
  				}
  			else if(Camera.getNumberOfCameras()==2&&!IsBack)
@@ -152,7 +191,7 @@ public class StartActivity extends Activity {
  				cameraPosition=findBackCamera();
  				mCamera=getCameraInstance(cameraPosition);
  				IsBack=true;
- 				
+ 				flash.setVisibility(0);
 				  
  			}
  			else if(Camera.getNumberOfCameras()==1)
@@ -160,13 +199,15 @@ public class StartActivity extends Activity {
  				cameraPosition=findBackCamera();
  				mCamera=getCameraInstance(cameraPosition);
  				IsBack=true;
+ 				flash.setVisibility(0);
  				  
  			}
             mCamera.startPreview();
             mPreview = new CameraPreview(StartActivity.this, mCamera); 
  			//mFrameLayout= (FrameLayout)findViewById(R.id.PreviewView);
  			mFrameLayout.addView(mPreview); 
- 			
+ 			mFrameLayout.addView(exchange);
+  			mFrameLayout.addView(flash);
  		}
  		
  			
@@ -196,12 +237,13 @@ public class StartActivity extends Activity {
         /**闪光灯功能的实现
          * @date 2014.8.5
          * **/
-        flash=(ImageView)findViewById(R.id.flashImage);
+        //flash=(ImageView)findViewById(R.id.flashImage);
         flash.setOnClickListener(new OnClickListener(){  	
 		@Override
 		public void onClick(View arg0) {
 			// TODO Auto-generated method stub
 				
+			
 			/*如果摄像机打开，点击后关闭，闪光灯图片变为关闭图片*/
 			if(flash_open==true)
 			{
@@ -210,6 +252,7 @@ public class StartActivity extends Activity {
 				mCamera.setParameters(parameters);
 				flash_open=false;
 				test1.writeDate(StartActivity.this, flash_open);
+				flash.setImageResource(R.drawable.menu_button_flash_off);
 			}
 				
 			else
@@ -219,6 +262,7 @@ public class StartActivity extends Activity {
 				mCamera.setParameters(parameters);
 				flash_open=true;
 				test1.writeDate(StartActivity.this, flash_open);
+				flash.setImageResource(R.drawable.menu_button_flash);
 			}
 			
 			}
@@ -241,14 +285,23 @@ public class StartActivity extends Activity {
                     @Override
                     public void onAutoFocus(boolean isSuccess, Camera camera) 
                     {
-                        if(isSuccess&&camera!=null&&IsBack)
+                    	if(isSuccess&&camera!=null)
                         {
                         		
+
+                           /* if(!IsBack)
+                            {
+                            	parameters= mCamera.getParameters();
+                        		parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+            					mCamera.setParameters(parameters);
+            					
+                            }*/
                         		if(flash_open==true)
                 				{
                         			parameters= mCamera.getParameters();
                 					parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
                 					mCamera.setParameters(parameters);
+                					mCamera.takePicture(mShutterCallback, null, mPicureCallback);
                 				}
                 				
                 				else
@@ -256,16 +309,11 @@ public class StartActivity extends Activity {
                 					parameters= mCamera.getParameters();
                             		parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
                 					mCamera.setParameters(parameters);
+                					mCamera.takePicture(mShutterCallback, null, mPicureCallback);
                 				}
-                        		mCamera.takePicture(mShutterCallback, null, mPicureCallback);
+                        		
                         }
-                        else
-                        {
-                        	parameters= mCamera.getParameters();
-                    		parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
-        					mCamera.setParameters(parameters);
-        					mCamera.takePicture(null, null, mPicureCallback);
-                        }
+                       
                     }
                      
                 });
@@ -302,7 +350,7 @@ public class StartActivity extends Activity {
               
         }
         });*/
-        /**视频录像**/
+     /**视频录像**/
      video=(Button) findViewById(R.id._videoP);
      video.setOnClickListener(new OnClickListener(){
 		@Override
@@ -393,7 +441,7 @@ public class StartActivity extends Activity {
      protected void onStart()
      {
     	 super.onStart();
-    	 flash_open=test1.init(StartActivity.this);
+    	// flash_open=test1.init(StartActivity.this);
      }
      @Override
      protected void onRestart()
@@ -407,7 +455,9 @@ public class StartActivity extends Activity {
          	 mCamera.startPreview();
          	 mPreview = new CameraPreview(StartActivity.this, mCamera); 
     		 mFrameLayout.addView(mPreview);
-    
+    		 mFrameLayout.addView(exchange); 
+   			 mFrameLayout.addView(flash);
+   			 flash_open=test1.init(StartActivity.this);
          }
      }
     @Override
@@ -418,7 +468,8 @@ public class StartActivity extends Activity {
             mCamera.stopPreview();//停掉原来摄像头的预览
             mCamera.release();//释放资源
             mCamera = null;//取消原来摄像头 
-            mFrameLayout.removeView(mPreview);//清除预览区
+           // mFrameLayout.removeView(mPreview);//清除预览区
+            mFrameLayout.removeAllViews();
         }
         test1.writeDate(StartActivity.this, flash_open);
     }
@@ -432,7 +483,8 @@ public class StartActivity extends Activity {
          mCamera.stopPreview();//停掉原来摄像头的预览
          mCamera.release();//释放资源
          mCamera = null;//取消原来摄像头 
-         mFrameLayout.removeView(mPreview);//清除预览区
+         //mFrameLayout.removeView(mPreview);//清除预览区
+         mFrameLayout.removeAllViews();
      }
      test1.writeDate(StartActivity.this, flash_open);
 	 
@@ -450,12 +502,13 @@ public class StartActivity extends Activity {
         if(mCamera==null)
         {
         	
+        	 flash_open=test1.init(StartActivity.this);
         	 mCamera=getCameraInstance(findBackCamera()); //cameraPosition
         	 mCamera.startPreview();
         	 mPreview = new CameraPreview(StartActivity.this, mCamera); 
    			 mFrameLayout.addView(mPreview);
-        	
-             
+   			 mFrameLayout.addView(exchange);
+   			 mFrameLayout.addView(flash);
         }
         //test1.writeDate(StartActivity.this, flash_open);
     }
