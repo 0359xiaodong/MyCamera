@@ -27,9 +27,6 @@ public class videoActivity extends Activity implements SurfaceHolder.Callback {
     private SurfaceView surfaceview;// 显示视频的控件 
 
     private RelativeLayout mRelativeLayout;
-    // 用来显示视频的一个接口，我靠不用还不行，也就是说用mediarecorder录制视频还得给个界面看 
-
-    // 想偷偷录视频的同学可以考虑别的办法。。嗯需要实现这个接口的Callback接口 
 
     private SurfaceHolder surfaceHolder; 
 
@@ -49,7 +46,7 @@ public class videoActivity extends Activity implements SurfaceHolder.Callback {
 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE); 
 
-        // 选择支持半透明模式,在有surfaceview的activity中使用。 
+        // 选择支持半透明模式 
 
         getWindow().setFormat(PixelFormat.TRANSLUCENT); 
 
@@ -129,11 +126,11 @@ public class videoActivity extends Activity implements SurfaceHolder.Callback {
 
                 mediarecorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP/*.VideoEncoder.H264*/); 
 /*
-                // 设置视频录制的分辨率。必须放在设置编码和格式的后面，否则报错 
+                // 设置视频录制的分辨率。
 
                 mediarecorder.setVideoSize(176, 144); 
 
-                // 设置录制的视频帧率。必须放在设置编码和格式的后面，否则报错 
+                // 设置录制的视频帧率。
 
                 mediarecorder.setVideoFrameRate(20); */
 
@@ -275,7 +272,7 @@ public class videoActivity extends Activity implements SurfaceHolder.Callback {
 
 	      holder.addCallback(this); // holder加入回调接口 
 
-	        // setType必须设置，要不出错. 
+	        // setType必须设置
 
 	      holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS); 
 	}
