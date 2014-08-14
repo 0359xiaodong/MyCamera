@@ -4,117 +4,294 @@ import java.io.IOException;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
-import android.hardware.Camera;
-import android.media.CamcorderProfile;
+import android.graphics.PixelFormat;
 import android.media.MediaRecorder;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
-public class videoActivity extends Activity implements OnClickListener, SurfaceHolder.Callback {
-    MediaRecorder recorder;
-    SurfaceHolder holder;
-    boolean recording = false;
-    FrameLayout mFrameLayout; 
-    public static CameraPreview mPreview;
-    public static Camera mCamera=getCameraInstance();
+public class videoActivity extends Activity implements SurfaceHolder.Callback { 
+
+    private Button start;// 开始录制按钮 
+
+    private MediaRecorder mediarecorder;// 录制视频的类 
+
+    private SurfaceView surfaceview;// 显示视频的控件 
+
+    private RelativeLayout mRelativeLayout;
+    // 用来显示视频的一个接口，我靠不用还不行，也就是说用mediarecorder录制视频还得给个界面看 
+
+    // 想偷偷录视频的同学可以考虑别的办法。。嗯需要实现这个接口的Callback接口 
+
+    private SurfaceHolder surfaceHolder; 
+
+    private boolean isRecording=false;
+
+    public void onCreate(Bundle savedInstanceState) { 
+
+        super.onCreate(savedInstanceState); 
+
+        requestWindowFeature(Window.FEATURE_NO_TITLE);// 去掉标题栏 
+
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 
+
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);// 设置全屏 
+
+        // 设置横屏显示 
+
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE); 
+
+        // 选择支持半透明模式,在有surfaceview的activity中使用。 
+
+        getWindow().setFormat(PixelFormat.TRANSLUCENT); 
+
+        setContentView(R.layout.videoxml); 
+  
+        start = new Button(this);
+        
+        LayoutParams params2 = new RelativeLayout.LayoutParams(134,70);
+
+        ((android.widget.RelativeLayout.LayoutParams) params2).addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        
+       /* ((android.widget.RelativeLayout.LayoutParams) params2).addRule(RelativeLayout.RIGHT_OF,R.id.flashImage);
+        
+        ((android.widget.RelativeLayout.LayoutParams) params2).addRule(RelativeLayout.ALIGN_TOP,R.id.flashImage);*/
+        
+        start.setBackgroundResource(R.drawable.menu_button_sensor_off);
+        
+        
+        //exchange.setLayoutParams(Gravity.RIGHT);
+        start.setLayoutParams(params2);
+        
+        mRelativeLayout=(RelativeLayout)findViewById(R.id.layout);
+        mRelativeLayout.addView(start);
+
+        init(); 
+
+    } 
+
+ 
+
+    private void init() { 
+
+       // start = (Button) this.findViewById(R.id._videoP); 
+
+        start.setOnClickListener(new TestVideoListener()); 
+
+        surfaceview = (SurfaceView) this.findViewById(R.id.sur1); 
+
+        SurfaceHolder holder = surfaceview.getHolder();// 取得holder 
+
+        holder.addCallback(this); // holder加入回调接口 
+
+        // setType必须设置，要不出错. 
+
+        holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS); 
+
+    } 
+
+ 
+
+    class TestVideoListener implements OnClickListener { 
+
+ 
+
+        @Override 
+
+        public void onClick(View v) { 
+
+            if (!isRecording) { 
+
+            	start.setBackgroundResource(R.drawable.menu_button_sensor_on);
+            	
+            	isRecording = true;
+                mediarecorder = new MediaRecorder();// 创建mediarecorder对象 
+
+                // 设置录制视频源为Camera(相机) 
+
+                mediarecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA); 
+
+                // 设置录制完成后视频的封装格式THREE_GPP为3gp.MPEG_4为mp4 
+
+                mediarecorder 
+
+                        .setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP); 
+
+                // 设置录制的视频编码h263 h264 
+
+                mediarecorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP/*.VideoEncoder.H264*/); 
+/*
+                // 设置视频录制的分辨率。必须放在设置编码和格式的后面，否则报错 
+
+                mediarecorder.setVideoSize(176, 144); 
+
+                // 设置录制的视频帧率。必须放在设置编码和格式的后面，否则报错 
+
+                mediarecorder.setVideoFrameRate(20); */
+
+                mediarecorder.setPreviewDisplay(surfaceHolder.getSurface()); 
+
+                // 设置视频文件输出的路径 
+
+                mediarecorder.setOutputFile("/sdcard/love.3gp"); 
+
+                try { 
+
+                    // 准备录制 
+
+                    mediarecorder.prepare(); 
+
+                    // 开始录制 
+
+                    mediarecorder.start(); 
+
+                } catch (IllegalStateException e) { 
+
+                    // TODO Auto-generated catch block 
+
+                    e.printStackTrace(); 
+
+                } catch (IOException e) { 
+
+                    // TODO Auto-generated catch block 
+
+                    e.printStackTrace(); 
+
+                } 
+
+            } 
+
+            else { 
+            	start.setBackgroundResource(R.drawable.menu_button_sensor_off);
+            	isRecording = false;
+                if (mediarecorder != null) { 
+
+                    // 停止录制 
+
+                    mediarecorder.stop(); 
+
+                    // 释放资源 
+
+                    mediarecorder.release(); 
+
+                    mediarecorder = null; 
+
+                } 
+
+            } 
+
+ 
+
+        } 
+
+ 
+
+    } 
+
+ 
+
+    @Override 
+
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, 
+
+            int height) { 
+
+        // 将holder，这个holder为开始在oncreat里面取得的holder，将它赋给surfaceHolder 
+
+        surfaceHolder = holder; 
+
+    } 
+
+ 
+
+    @Override 
+
+    public void surfaceCreated(SurfaceHolder holder) { 
+
+        // 将holder，这个holder为开始在oncreat里面取得的holder，将它赋给surfaceHolder 
+
+        surfaceHolder = holder; 
+
+    } 
+
+ 
+
+    
+    @Override 
+
+    public void surfaceDestroyed(SurfaceHolder holder) { 
+
+        // surfaceDestroyed的时候同时对象设置为null 
+
+        surfaceview = null; 
+
+        surfaceHolder = null; 
+
+        mediarecorder = null; 
+
+    }
 @Override
-public void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    requestWindowFeature(Window.FEATURE_NO_TITLE);
-    getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-            WindowManager.LayoutParams.FLAG_FULLSCREEN);
-    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+    protected void onStop()
+    {
+    	super.onStop();
+    	
+    	surfaceview = null; 
 
-    recorder = new MediaRecorder();
-    initRecorder();
-    setContentView(R.layout.test02);
-    
-    
-    
-    SurfaceView cameraView = (SurfaceView) findViewById(R.id.sur);
-    holder = cameraView.getHolder();
-    holder.addCallback(this);
-    holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-    surfaceCreated(holder);
-    cameraView.setClickable(true);
-    cameraView.setOnClickListener(this);
-
-}
-
-private void initRecorder() {
-    recorder.setAudioSource(/*MediaRecorder.AudioSource.DEFAULT*/MediaRecorder.AudioSource.MIC);
-    recorder.setVideoSource(/*MediaRecorder.VideoSource.DEFAULT*/MediaRecorder.AudioSource.MIC);
-
-    CamcorderProfile cpHigh = CamcorderProfile
-            .get(CamcorderProfile.QUALITY_HIGH);
-    recorder.setProfile(cpHigh);
-    recorder.setOutputFile("/sdcard/videocapture_example.mp4");
-    recorder.setMaxDuration(50000); // 50 seconds
-    recorder.setMaxFileSize(5000000); // Approximately 5 megabytes
-}
-
-private void prepareRecorder() {
-    recorder.setPreviewDisplay(holder.getSurface());
-
-    try {
-        recorder.prepare();
-    } catch (IllegalStateException e) {
-        e.printStackTrace();
-        finish();
-    } catch (IOException e) {
-        e.printStackTrace();
-        finish();
+    	if(mediarecorder!=null){
+		surfaceHolder = null; 
+		mediarecorder.release();
+		mediarecorder = null;
+    	}
     }
-}
+@Override
+	protected void onPause()
+	{
+		super.onPause();
+		surfaceview = null; 
+		 //mediarecorder.release();
+		if(mediarecorder!=null)
+		{
 
-public void onClick(View v) {
-    if (recording) {
-        recorder.stop();
-        recording = false;
+		surfaceHolder = null; 
+		mediarecorder.release();
+		mediarecorder = null;
+		}
+	}
+@Override
+	protected void onResume()
+	{
+		super.onResume();
+		  surfaceview = (SurfaceView) this.findViewById(R.id.sur1); 
 
-        // Let's initRecorder so we can record again
-        initRecorder();
-        prepareRecorder();
-    } else {
-        recording = true;
-        recorder.start();
-    }
-}
+	      SurfaceHolder holder = surfaceview.getHolder();// 取得holder 
 
-public void surfaceCreated(SurfaceHolder holder) {
-    prepareRecorder();
-}
+	      holder.addCallback(this); // holder加入回调接口 
 
-public void surfaceChanged(SurfaceHolder holder, int format, int width,
-        int height) {
-}
+	        // setType必须设置，要不出错. 
 
-public void surfaceDestroyed(SurfaceHolder holder) {
-    if (recording) {
-        recorder.stop();
-        recording = false;
-    }
-    recorder.release();
-    finish();
-}
+	      holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS); 
+	}
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+		 surfaceview = null; 
+		if(mediarecorder!=null)
+		{
 
-public static Camera getCameraInstance(){ 
-    Camera c = null; 
-    try { 
-        c = Camera.open();
-    } 
-    catch (Exception e){
-    Log.d("TAG", "Error is "+e.getMessage());
-    } 
-    return c;
-}
+	     surfaceHolder = null; 
+	     mediarecorder.release();
+	     mediarecorder = null; 
+		}
+	} 
+    
 
-
-}
+} 
